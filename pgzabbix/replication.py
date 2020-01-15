@@ -10,7 +10,10 @@ def view_select(cur):
 
 def write_diff(cur):
     vers = cur.connection.server_version
-    if vers <  100000:
+    if vers <= 90124:
+        # Postgres 9.1 Doesn't support diffing the xlog locations
+        return
+    elif vers < 100000:
         query = ("SELECT host(client_addr), "
                  " pg_xlog_location_diff(sent_location, write_location) "
                  " from {table}")
@@ -23,10 +26,12 @@ def write_diff(cur):
     for row in cur.fetchall():
         yield ('psql.write_diff[%s]' % (row[0]), row[1])
 
-
 def replay_diff(cur):
     vers = cur.connection.server_version
-    if vers <  100000:
+    if vers <= 90124:
+        # Postgres 9.1 Doesn't support diffing the xlog locations
+        return
+    elif vers < 100000:
         query = ("SELECT host(client_addr), "
                  " pg_xlog_location_diff(sent_location, replay_location) "
                  " from {table}")
@@ -39,7 +44,6 @@ def replay_diff(cur):
     for row in cur.fetchall():
         yield ('psql.replay_diff[%s]' % (row[0]), row[1])
 
-
 def sync_priority(cur):
     query = ("SELECT host(client_addr), "
              " sync_priority "
@@ -48,7 +52,6 @@ def sync_priority(cur):
     cur.execute(query.format(table=view_select(cur)))
     for row in cur.fetchall():
         yield ('psql.sync_priority[%s]' % (row[0]), row[1])
-
 
 def sr_discovery(cur):
     query = ("SELECT client_addr, state from {table};")

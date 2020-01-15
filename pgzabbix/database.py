@@ -17,13 +17,12 @@ def psql_db_size(cur):
     for row in cur.fetchall():
         yield ("psql.db_size[%s]" % (row[0]), row[1])
 
-
 def psql_db_garbage_ratio(cur):
     return ()
 #    cur.execute("select datname, pg_database_size(datname) from pg_database "
 #                " where datistemplate = 'f'")
 #    for row in cur.fetchall():
-#        yield ("psql.db_size[{}]".format(row[0]), row[1])
+#        yield ("psql.db_size[{0}]".format(row[0]), row[1])
 
 
 def confl_tablespace(cur):
@@ -33,14 +32,12 @@ def confl_tablespace(cur):
     for row in cur.fetchall():
         yield ('psql.confl_tablespace[%s]' % (row[0]), row[1])
 
-
 def confl_lock(cur):
     cur.execute("select datname, confl_lock from pg_stat_database_conflicts "
                 " inner join pg_database using (datname)"
                 " where pg_database.datistemplate=False;")
     for row in cur.fetchall():
         yield ('psql.confl_lock[%s]' % (row[0]), row[1])
-
 
 def confl_snapshot(cur):
     cur.execute("select datname, confl_snapshot from pg_stat_database_conflicts"
@@ -49,14 +46,12 @@ def confl_snapshot(cur):
     for row in cur.fetchall():
         yield ('psql.confl_snapshot[%s]' % (row[0]), row[1])
 
-
 def confl_bufferpin(cur):
     cur.execute("select datname, confl_bufferpin from pg_stat_database_conflicts"
                 " inner join pg_database using (datname)"
                 " where pg_database.datistemplate=False;")
     for row in cur.fetchall():
         yield ('psql.confl_bufferpin[%s]' % (row[0]), row[1])
-
 
 def confl_deadlock(cur):
     cur.execute("select datname, confl_deadlock from pg_stat_database_conflicts"
@@ -66,7 +61,6 @@ def confl_deadlock(cur):
     for row in cur.fetchall():
         yield ('psql.confl_deadlock[%s]' % (row[0]), row[1])
 
-
 def db_tx_commited(cur):
     cur.execute("select datname, xact_commit from pg_stat_database"
                 " inner join pg_database using (datname)"
@@ -74,15 +68,17 @@ def db_tx_commited(cur):
     for row in cur.fetchall():
         yield ('psql.db_tx_commited[%s]' % (row[0]), row[1])
 
-
 def db_deadlocks(cur):
+    vers = cur.connection.server_version
+    if vers <= 90125:
+        # Old postgresql version
+        return
     cur.execute("select datname, deadlocks from pg_stat_database"
                 " inner join pg_database using (datname)"
                 " where pg_database.datistemplate=False;")
 
     for row in cur.fetchall():
         yield ('psql.db_deadlocks[%s]' % (row[0]), row[1])
-
 
 def db_tx_rolledback(cur):
     cur.execute("select datname, xact_rollback from pg_stat_database"
@@ -91,14 +87,16 @@ def db_tx_rolledback(cur):
     for row in cur.fetchall():
         yield ('psql.db_tx_rolledback[%s]' % (row[0]), row[1])
 
-
 def db_temp_bytes(cur):
+    vers = cur.connection.server_version
+    if vers <= 90125:
+        # Old postgresql version
+        return
     cur.execute("select datname, temp_bytes from pg_stat_database"
                 " inner join pg_database using (datname)"
                 " where pg_database.datistemplate=False;")
     for row in cur.fetchall():
         yield ('psql.db_temp_bytes[%s]' %(row[0]), row[1])
-
 
 def db_deleted(cur):
     cur.execute("select datname, tup_deleted from pg_stat_database"
@@ -107,14 +105,12 @@ def db_deleted(cur):
     for row in cur.fetchall():
         yield ('psql.db_deleted[%s]' % (row[0]), row[1])
 
-
 def db_fetched(cur):
     cur.execute("select datname, tup_fetched from pg_stat_database"
                 " inner join pg_database using (datname)"
                 " where pg_database.datistemplate=False;")
     for row in cur.fetchall():
         yield ('psql.db_fetched[%s]' % (row[0]), row[1])
-
 
 def db_inserted(cur):
     cur.execute("select datname, tup_inserted from pg_stat_database"
@@ -123,14 +119,12 @@ def db_inserted(cur):
     for row in cur.fetchall():
         yield ('psql.db_inserted[%s]' % (row[0]), row[1])
 
-
 def db_returned(cur):
     cur.execute("select datname, tup_returned from pg_stat_database"
                 " inner join pg_database using (datname)"
                 " where pg_database.datistemplate=False;")
     for row in cur.fetchall():
         yield ('psql.db_returned[%s]' % (row[0]), row[1])
-
 
 def db_updated(cur):
     cur.execute("select datname, tup_updated from pg_stat_database"
@@ -139,14 +133,12 @@ def db_updated(cur):
     for row in cur.fetchall():
         yield ('psql.db_updated[%s]' % (row[0]), row[1])
 
-
 def db_connections(cur):
     cur.execute("select datname, numbackends from pg_stat_database"
                 " inner join pg_database using (datname)"
                 " where pg_database.datistemplate=False;")
     for row in cur.fetchall():
         yield ('psql.db_connections[%s]' % (row[0]), row[1])
-
 
 def db_cachehit_ratio(cur):
     cur.execute("select datname, round(blks_hit * 100.0 / (blks_hit + greatest(blks_read, 1)), 2)"
