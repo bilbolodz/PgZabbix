@@ -7,10 +7,17 @@ try:
 except ImportError:
     import configparser
 
-
 def parseConfig(inifile):
-    config = configparser.SafeConfigParser()
-    config.readfp(inifile)
+    try:
+        config = configparser.SafeConfigParser()
+    except AttributeError:
+        config = configparser.ConfigParser()
+
+    try:
+        config.read_file(inifile)
+    except AttributeError:
+        config.readfp(inifile)
+
     if not config.sections():
         print("No sections in %s. Exiting" % inifile)
         exit(1)
@@ -19,7 +26,6 @@ def parseConfig(inifile):
     for item in ('host', 'password', 'dbname', 'user'):
         opt[item] = config.get("postgres", item)
     return opt
-
 
 def get_connection(config):
     conn_string = "host={host} dbname={dbname} user={user} password={password}"

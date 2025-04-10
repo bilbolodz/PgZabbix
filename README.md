@@ -1,4 +1,4 @@
-PgZabbix (python 2.6 compatible version)
+PgZabbix (python 2.6, 3.X, 3.12 compatible version)
 
 Suck some stats out of Postgres, and inject it into Zabbix. Mostly based on
 pg_monz but not written in shell script.
